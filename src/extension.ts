@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { ClaudeDataProvider } from './providers/ClaudeDataProvider';
 import { SessionTreeProvider } from './providers/SessionTreeProvider';
 import { StatsTreeProvider } from './providers/StatsTreeProvider';
+import { DashboardPanel } from './views/DashboardPanel';
 import type { ClaudeSession } from './types';
 
 let fileWatcher: vscode.FileSystemWatcher | undefined;
@@ -46,9 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('codeAgentMonitor.openDashboard', () => {
-      vscode.window.showInformationMessage(
-        'Dashboard coming soon! For now, check the sidebar panels.'
-      );
+      DashboardPanel.createOrShow(context.extensionUri, dataProvider);
     })
   );
 
