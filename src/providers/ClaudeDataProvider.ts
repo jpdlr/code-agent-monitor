@@ -124,15 +124,14 @@ export class ClaudeDataProvider {
     messages: number;
     sessions: number;
     toolCalls: number;
-    inputTokens: number;
-    outputTokens: number;
+    totalTokens: number;
     date: string;
   }> {
     const stats = await this.getStats();
     const today = new Date().toISOString().split('T')[0];
 
     if (!stats || !stats.dailyActivity || stats.dailyActivity.length === 0) {
-      return { messages: 0, sessions: 0, toolCalls: 0, inputTokens: 0, outputTokens: 0, date: today };
+      return { messages: 0, sessions: 0, toolCalls: 0, totalTokens: 0, date: today };
     }
 
     // Try to find today's data, otherwise use the most recent day
@@ -147,13 +146,13 @@ export class ClaudeDataProvider {
       dateLabel = activity?.date || today;
     }
 
-    let inputTokens = 0;
-    let outputTokens = 0;
+    // Daily tokens only have total per model, not input/output breakdown
+    // Sum all model totals for the day
+    let totalTokens = 0;
 
-    if (tokenData?.modelTokens) {
-      for (const usage of Object.values(tokenData.modelTokens)) {
-        inputTokens += usage.inputTokens || 0;
-        outputTokens += usage.outputTokens || 0;
+    if (tokenData?.tokensByModel) {
+      for (const count of Object.values(tokenData.tokensByModel)) {
+        totalTokens += (count as number) || 0;
       }
     }
 
@@ -161,8 +160,7 @@ export class ClaudeDataProvider {
       messages: activity?.messageCount || 0,
       sessions: activity?.sessionCount || 0,
       toolCalls: activity?.toolCallCount || 0,
-      inputTokens,
-      outputTokens,
+      totalTokens,
       date: dateLabel,
     };
   }

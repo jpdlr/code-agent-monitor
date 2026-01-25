@@ -40,7 +40,7 @@ export interface DailyActivity {
 
 export interface DailyModelTokens {
   date: string;
-  modelTokens: Record<string, TokenUsage>;
+  tokensByModel: Record<string, number>;
 }
 
 export interface TokenUsage {

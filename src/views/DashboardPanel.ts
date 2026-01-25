@@ -328,8 +328,7 @@ export class DashboardPanel {
     </div>
     <div class="stat-card">
       <div class="label">Tokens (${dateLabel})</div>
-      <div class="value">${this.formatTokens(recentStats.inputTokens + recentStats.outputTokens)}</div>
-      <div class="subtext">In: ${this.formatTokens(recentStats.inputTokens)} / Out: ${this.formatTokens(recentStats.outputTokens)}</div>
+      <div class="value">${this.formatTokens(recentStats.totalTokens)}</div>
     </div>
     <div class="stat-card">
       <div class="label">All Time</div>

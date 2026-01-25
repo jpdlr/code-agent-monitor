@@ -63,23 +63,13 @@ export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem>
 
     // Token usage
     items.push(this.createStatItem('', '', 'blank'));
-    items.push(this.createStatItem(`Tokens (${dateLabel})`, '', 'dashboard'));
 
     items.push(
       this.createStatItem(
-        'Input',
-        this.dataProvider.formatTokenCount(recentStats.inputTokens),
-        'arrow-right',
-        `${recentStats.inputTokens.toLocaleString()} input tokens on ${recentStats.date}`
-      )
-    );
-
-    items.push(
-      this.createStatItem(
-        'Output',
-        this.dataProvider.formatTokenCount(recentStats.outputTokens),
-        'arrow-left',
-        `${recentStats.outputTokens.toLocaleString()} output tokens on ${recentStats.date}`
+        `Tokens (${dateLabel})`,
+        this.dataProvider.formatTokenCount(recentStats.totalTokens),
+        'dashboard',
+        `${recentStats.totalTokens.toLocaleString()} tokens on ${recentStats.date}`
       )
     );
 
