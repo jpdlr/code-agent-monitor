@@ -1,0 +1,84 @@
+{
+  "name": "code-agent-monitor",
+  "displayName": "Code Agent Monitor",
+  "description": "Monitor Claude Code sessions, history, and usage statistics",
+  "version": "0.1.0",
+  "publisher": "jpdlr",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jpdlr/code-agent-monitor"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:codeAgentSessions"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "code-agent-monitor",
+          "title": "Code Agent Monitor",
+          "icon": "$(hubot)"
+        }
+      ]
+    },
+    "views": {
+      "code-agent-monitor": [
+        {
+          "id": "codeAgentSessions",
+          "name": "Sessions"
+        },
+        {
+          "id": "codeAgentStats",
+          "name": "Stats"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "codeAgentMonitor.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "codeAgentMonitor.openDashboard",
+        "title": "Code Agent Monitor: Open Dashboard"
+      },
+      {
+        "command": "codeAgentMonitor.openSession",
+        "title": "Open Session"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "codeAgentMonitor.refresh",
+          "when": "view == codeAgentSessions || view == codeAgentStats",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "watch": "npm run compile -- --watch",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "esbuild": "^0.19.8",
+    "eslint": "^8.55.0",
+    "typescript": "^5.3.2"
+  }
+}
