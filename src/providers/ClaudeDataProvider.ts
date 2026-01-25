@@ -45,10 +45,11 @@ export class ClaudeDataProvider {
         const indexContent = fs.readFileSync(indexPath, 'utf-8');
         const index: SessionsIndex = JSON.parse(indexContent);
 
-        const projectPath = this.unescapePath(entry.name);
+        const projectPath = index.originalPath || this.unescapePath(entry.name);
         const projectName = path.basename(projectPath);
 
-        const sessions = index.sessions || [];
+        // sessions-index.json uses "entries" not "sessions"
+        const sessions = index.entries || index.sessions || [];
         const totalMessages = sessions.reduce((sum, s) => sum + s.messageCount, 0);
 
         let lastModified = new Date(0);

@@ -11,7 +11,9 @@ export interface ClaudeSession {
 
 export interface SessionsIndex {
   version: number;
-  sessions: ClaudeSession[];
+  entries?: ClaudeSession[];
+  sessions?: ClaudeSession[];  // Legacy fallback
+  originalPath?: string;
 }
 
 export interface ClaudeStats {
