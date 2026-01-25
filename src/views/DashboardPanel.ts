@@ -70,7 +70,7 @@ export class DashboardPanel {
   private getHtmlContent(
     stats: any,
     projects: any[],
-    todayStats: any,
+    recentStats: any,
     modelUsage: Record<string, { input: number; output: number }>
   ): string {
     const dailyData = stats?.dailyActivity?.slice(-14) || [];
@@ -78,6 +78,11 @@ export class DashboardPanel {
       (sum, m) => sum + m.input + m.output,
       0
     );
+
+    // Format date label
+    const todayDate = new Date().toISOString().split('T')[0];
+    const isToday = recentStats.date === todayDate;
+    const dateLabel = isToday ? 'Today' : this.formatDateLabel(recentStats.date);
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -313,18 +318,18 @@ export class DashboardPanel {
 
   <div class="grid">
     <div class="stat-card">
-      <div class="label">Today's Messages</div>
-      <div class="value">${todayStats.messages}</div>
-      <div class="subtext">${todayStats.sessions} sessions</div>
+      <div class="label">${dateLabel}'s Messages</div>
+      <div class="value">${recentStats.messages}</div>
+      <div class="subtext">${recentStats.sessions} sessions</div>
     </div>
     <div class="stat-card">
-      <div class="label">Tool Calls Today</div>
-      <div class="value">${todayStats.toolCalls}</div>
+      <div class="label">Tool Calls (${dateLabel})</div>
+      <div class="value">${recentStats.toolCalls}</div>
     </div>
     <div class="stat-card">
-      <div class="label">Tokens Today</div>
-      <div class="value">${this.formatTokens(todayStats.inputTokens + todayStats.outputTokens)}</div>
-      <div class="subtext">In: ${this.formatTokens(todayStats.inputTokens)} / Out: ${this.formatTokens(todayStats.outputTokens)}</div>
+      <div class="label">Tokens (${dateLabel})</div>
+      <div class="value">${this.formatTokens(recentStats.inputTokens + recentStats.outputTokens)}</div>
+      <div class="subtext">In: ${this.formatTokens(recentStats.inputTokens)} / Out: ${this.formatTokens(recentStats.outputTokens)}</div>
     </div>
     <div class="stat-card">
       <div class="label">All Time</div>
@@ -367,6 +372,19 @@ export class DashboardPanel {
   </script>
 </body>
 </html>`;
+  }
+
+  private formatDateLabel(dateStr: string): string {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (dateStr === yesterday.toISOString().split('T')[0]) {
+      return 'Yesterday';
+    }
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
   private formatTokens(count: number): string {

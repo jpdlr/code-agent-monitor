@@ -125,33 +125,44 @@ export class ClaudeDataProvider {
     toolCalls: number;
     inputTokens: number;
     outputTokens: number;
+    date: string;
   }> {
     const stats = await this.getStats();
     const today = new Date().toISOString().split('T')[0];
 
-    if (!stats) {
-      return { messages: 0, sessions: 0, toolCalls: 0, inputTokens: 0, outputTokens: 0 };
+    if (!stats || !stats.dailyActivity || stats.dailyActivity.length === 0) {
+      return { messages: 0, sessions: 0, toolCalls: 0, inputTokens: 0, outputTokens: 0, date: today };
     }
 
-    const todayActivity = stats.dailyActivity.find((d) => d.date === today);
-    const todayTokens = stats.dailyModelTokens?.find((d) => d.date === today);
+    // Try to find today's data, otherwise use the most recent day
+    let activity = stats.dailyActivity.find((d) => d.date === today);
+    let tokenData = stats.dailyModelTokens?.find((d) => d.date === today);
+    let dateLabel = today;
+
+    if (!activity) {
+      // Fall back to most recent day
+      activity = stats.dailyActivity[stats.dailyActivity.length - 1];
+      tokenData = stats.dailyModelTokens?.[stats.dailyModelTokens.length - 1];
+      dateLabel = activity?.date || today;
+    }
 
     let inputTokens = 0;
     let outputTokens = 0;
 
-    if (todayTokens?.modelTokens) {
-      for (const usage of Object.values(todayTokens.modelTokens)) {
+    if (tokenData?.modelTokens) {
+      for (const usage of Object.values(tokenData.modelTokens)) {
         inputTokens += usage.inputTokens || 0;
         outputTokens += usage.outputTokens || 0;
       }
     }
 
     return {
-      messages: todayActivity?.messageCount || 0,
-      sessions: todayActivity?.sessionCount || 0,
-      toolCalls: todayActivity?.toolCallCount || 0,
+      messages: activity?.messageCount || 0,
+      sessions: activity?.sessionCount || 0,
+      toolCalls: activity?.toolCallCount || 0,
       inputTokens,
       outputTokens,
+      date: dateLabel,
     };
   }
 

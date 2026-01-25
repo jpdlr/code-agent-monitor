@@ -26,57 +26,60 @@ export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem>
 
     const items: StatsTreeItem[] = [];
 
-    // Today's stats
-    const today = await this.dataProvider.getTodayStats();
+    // Recent stats (today or most recent day)
+    const recentStats = await this.dataProvider.getTodayStats();
+    const todayDate = new Date().toISOString().split('T')[0];
+    const isToday = recentStats.date === todayDate;
+    const dateLabel = isToday ? 'Today' : this.formatDateLabel(recentStats.date);
 
-    items.push(this.createStatItem('Today', '', 'calendar'));
+    items.push(this.createStatItem(dateLabel, '', 'calendar'));
 
     items.push(
       this.createStatItem(
         'Messages',
-        today.messages.toString(),
+        recentStats.messages.toString(),
         'comment',
-        `Messages sent today`
+        `Messages on ${recentStats.date}`
       )
     );
 
     items.push(
       this.createStatItem(
         'Sessions',
-        today.sessions.toString(),
+        recentStats.sessions.toString(),
         'window',
-        `Active sessions today`
+        `Sessions on ${recentStats.date}`
       )
     );
 
     items.push(
       this.createStatItem(
         'Tool Calls',
-        today.toolCalls.toString(),
+        recentStats.toolCalls.toString(),
         'tools',
-        `Tool invocations today`
+        `Tool calls on ${recentStats.date}`
       )
     );
 
     // Token usage
     items.push(this.createStatItem('', '', 'blank'));
-    items.push(this.createStatItem('Tokens', '', 'dashboard'));
+    items.push(this.createStatItem(`Tokens (${dateLabel})`, '', 'dashboard'));
 
     items.push(
       this.createStatItem(
         'Input',
-        this.dataProvider.formatTokenCount(today.inputTokens),
+        this.dataProvider.formatTokenCount(recentStats.inputTokens),
         'arrow-right',
-        `${today.inputTokens.toLocaleString()} input tokens today`
+        `${recentStats.inputTokens.toLocaleString()} input tokens on ${recentStats.date}`
       )
     );
 
     items.push(
       this.createStatItem(
         'Output',
-        this.dataProvider.formatTokenCount(today.outputTokens),
+        this.dataProvider.formatTokenCount(recentStats.outputTokens),
         'arrow-left',
-        `${today.outputTokens.toLocaleString()} output tokens today`
+        `${recentStats.outputTokens.toLocaleString()} output tokens on ${recentStats.date}`
       )
     );
 
@@ -127,6 +130,19 @@ export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem>
     }
 
     return items;
+  }
+
+  private formatDateLabel(dateStr: string): string {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (dateStr === yesterday.toISOString().split('T')[0]) {
+      return 'Yesterday';
+    }
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
   private createStatItem(
