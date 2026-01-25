@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
 import { ClaudeDataProvider } from './ClaudeDataProvider';
+import { CodexDataProvider } from './CodexDataProvider';
 
 export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<StatsTreeItem | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  private dataProvider: ClaudeDataProvider;
+  private claudeProvider: ClaudeDataProvider;
+  private codexProvider: CodexDataProvider;
 
-  constructor(dataProvider: ClaudeDataProvider) {
-    this.dataProvider = dataProvider;
+  constructor(claudeProvider: ClaudeDataProvider, codexProvider: CodexDataProvider) {
+    this.claudeProvider = claudeProvider;
+    this.codexProvider = codexProvider;
   }
 
   refresh(): void {
@@ -27,7 +30,7 @@ export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem>
     const items: StatsTreeItem[] = [];
 
     // Recent stats (today or most recent day)
-    const recentStats = await this.dataProvider.getTodayStats();
+    const recentStats = await this.claudeProvider.getTodayStats();
     const todayDate = new Date().toISOString().split('T')[0];
     const isToday = recentStats.date === todayDate;
     const dateLabel = isToday ? 'Today' : this.formatDateLabel(recentStats.date);
@@ -67,14 +70,14 @@ export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem>
     items.push(
       this.createStatItem(
         `Tokens (${dateLabel})`,
-        this.dataProvider.formatTokenCount(recentStats.totalTokens),
+        this.claudeProvider.formatTokenCount(recentStats.totalTokens),
         'dashboard',
         `${recentStats.totalTokens.toLocaleString()} tokens on ${recentStats.date}`
       )
     );
 
     // Model breakdown
-    const modelUsage = await this.dataProvider.getModelUsage();
+    const modelUsage = await this.claudeProvider.getModelUsage();
     const modelEntries = Object.entries(modelUsage);
 
     if (modelEntries.length > 0) {
@@ -86,7 +89,7 @@ export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem>
         items.push(
           this.createStatItem(
             model,
-            this.dataProvider.formatTokenCount(total),
+            this.claudeProvider.formatTokenCount(total),
             'symbol-method',
             `Input: ${usage.input.toLocaleString()}\nOutput: ${usage.output.toLocaleString()}`
           )
@@ -95,7 +98,7 @@ export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem>
     }
 
     // All-time stats
-    const stats = await this.dataProvider.getStats();
+    const stats = await this.claudeProvider.getStats();
     if (stats) {
       items.push(this.createStatItem('', '', 'blank'));
       items.push(this.createStatItem('All Time', '', 'history'));
@@ -117,6 +120,43 @@ export class StatsTreeProvider implements vscode.TreeDataProvider<StatsTreeItem>
           `All messages sent`
         )
       );
+    }
+
+    // Codex stats (if available)
+    if (this.codexProvider.isAvailable()) {
+      const codexStats = await this.codexProvider.getRecentStats();
+
+      items.push(this.createStatItem('', '', 'blank'));
+      items.push(this.createStatItem('Codex', '', 'terminal'));
+
+      items.push(
+        this.createStatItem(
+          'Total Sessions',
+          codexStats.totalSessions.toString(),
+          'folder-library',
+          `All Codex sessions`
+        )
+      );
+
+      items.push(
+        this.createStatItem(
+          'Recent Sessions',
+          codexStats.recentSessions.toString(),
+          'clock',
+          `Sessions in the last 7 days`
+        )
+      );
+
+      if (codexStats.providers.length > 0) {
+        items.push(
+          this.createStatItem(
+            'Providers',
+            codexStats.providers.join(', '),
+            'server',
+            `Model providers used`
+          )
+        );
+      }
     }
 
     return items;
