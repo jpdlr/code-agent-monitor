@@ -43,7 +43,7 @@ Then install the `.vsix` file in VS Code.
 ### Commands
 
 - `Code Agent Monitor: Refresh` - Manually refresh data
-- `Code Agent Monitor: Open Dashboard` - Open detailed dashboard (coming soon)
+- `Code Agent Monitor: Open Dashboard` - Open detailed dashboard
 
 ## Data Sources
 
